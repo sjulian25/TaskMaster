@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { taskService } from '../services/api';
+import { TaskForm } from '../components/tasks/TaskForm';  // Importar el formulario de tareas
 
 function Dashboard() {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);  // Estado para mostrar/ocultar el formulario
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -26,6 +28,13 @@ function Dashboard() {
     window.location.href = '/login';
   };
 
+  const handleTaskSaved = () => {
+    taskService.getTasks().then((response) => {
+      setTasks(response.data);  // Actualizar las tareas después de agregar una nueva
+      setShowForm(false);  // Ocultar el formulario después de guardar
+    });
+  };
+
   if (loading) {
     return <div>Cargando...</div>;
   }
@@ -41,6 +50,17 @@ function Dashboard() {
           Cerrar Sesión
         </button>
       </div>
+
+      {/* Botón para mostrar/ocultar el formulario */}
+      <button 
+        onClick={() => setShowForm(!showForm)}
+        className="mb-4 px-4 py-2 bg-blue-500 text-white rounded"
+      >
+        {showForm ? 'Cancelar' : 'Agregar tarea'}
+      </button>
+
+      {/* Mostrar el formulario de tareas si el estado es true */}
+      {showForm && <TaskForm onTaskSaved={handleTaskSaved} />}
 
       <div className="grid gap-4">
         {tasks.map(task => (

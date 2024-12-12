@@ -1,7 +1,7 @@
-import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Login from './components/auth/Login';
 import Dashboard from './pages/Dashboard';
+import { PropTypes } from 'prop-types';
 
 function App() {
   // Función para verificar si hay token de autenticación
@@ -12,6 +12,11 @@ function App() {
   // Componente de ruta protegida
   const PrivateRoute = ({ children }) => {
     return isAuthenticated() ? children : <Navigate to="/login" />;
+  };
+
+  // Validación de las props
+  PrivateRoute.propTypes = {
+    children: PropTypes.node.isRequired,
   };
 
   return (

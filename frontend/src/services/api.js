@@ -6,16 +6,79 @@ const api = axios.create({
   baseURL: API_URL
 });
 
+// Implementar el refresh token
+const refreshToken = async () => {
+  try {
+    const response = await axios.post(`${API_URL}token/refresh/`, {
+      refresh: localStorage.getItem('refresh_token'),
+    });
+    localStorage.setItem('access_token', response.data.access);
+  } catch (error) {
+    console.error("Error al refrescar el token", error);
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    window.location.href = '/login';
+  }
+};
+
 // Interceptor para añadir token de autenticación
-api.interceptors.request.use((config) => {
+// api.interceptors.request.use(async config => {
+//   const token = localStorage.getItem('access_token');
+//   const refresh = localStorage.getItem('refresh_token');
+
+//   if (token && refresh) {
+//     try {
+//       // Verificar expiración del token
+//       const exp = JSON.parse(atob(token.split('.')[1])).exp;
+//       if (Date.now() >= exp * 1000) {
+//         await refreshToken();
+//         config.headers['Authorization'] = `Bearer ${localStorage.getItem('access_token')}`;
+//       } else {
+//         config.headers['Authorization'] = `Bearer ${token}`;
+//       }
+//     } catch (error) {
+//       console.error("Error procesando el token: ", error);
+//     }
+//   }
+//   return config;
+// });
+
+api.interceptors.request.use(async config => {
   const token = localStorage.getItem('access_token');
-  if (token) {
-    config.headers['Authorization'] = `Bearer ${token}`;
+  const refresh = localStorage.getItem('refresh_token');
+
+  if (token && refresh) {
+    try {
+      const exp = JSON.parse(atob(token.split('.')[1])).exp;
+      if (Date.now() >= exp * 1000) {
+        await refreshToken();
+        config.headers['Authorization'] = `Bearer ${localStorage.getItem('access_token')}`;
+      } else {
+        config.headers['Authorization'] = `Bearer ${token}`;
+      }
+    } catch (error) {
+      console.error("Error procesando el token: ", error);
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      window.location.href = '/login';
+    }
   }
   return config;
-}, (error) => {
-  return Promise.reject(error);
 });
+
+
+// Intercepto para redirigir al login en caso de un 401
+api.interceptors.response.use(
+  response => response,
+  async error => {
+    if (error.response && error.response.status === 401) {
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
 
 // Servicios de autenticación
 export const authService = {
@@ -32,18 +95,51 @@ export const authService = {
 
 // Servicios de tareas
 export const taskService = {
-  getTasks: () => {
-    return api.get('tasks/');
-  },
-  createTask: (taskData) => {
-    return api.post('tasks/', taskData);
-  },
-  updateTask: (id, taskData) => {
-    return api.put(`tasks/${id}/`, taskData);
-  },
-  deleteTask: (id) => {
-    return api.delete(`tasks/${id}/`);
-  }
+  getTasks: () => api.get('tasks/'),
+  createTask: (taskData) => api.post('tasks/', taskData),
+  updateTask: (id, taskData) => api.put(`tasks/${id}/`, taskData),
+  deleteTask: (id) => api.delete(`tasks/${id}/`),
 };
+// export const taskService = {
+//   // Obtener todas las tareas
+//   getTasks: () => {
+//     const token = localStorage.getItem('access_token');
+//     return api.get('tasks/', {
+//       headers: {
+//         Authorization: `Bearer ${token}`, // Agregar el token en la cabecera
+//       }
+//     });
+//   },
+
+//   // Crear una nueva tarea
+//   createTask: (taskData) => {
+//     const token = localStorage.getItem('access_token');
+//     return api.post('tasks/', taskData, {
+//       headers: {
+//         Authorization: `Bearer ${token}`, // Agregar el token en la cabecera
+//       }
+//     });
+//   },
+
+//   // Actualizar una tarea existente
+//   updateTask: (id, taskData) => {
+//     const token = localStorage.getItem('access_token');
+//     return api.put(`tasks/${id}/`, taskData, {
+//       headers: {
+//         Authorization: `Bearer ${token}`, // Agregar el token en la cabecera
+//       }
+//     });
+//   },
+
+//   // Eliminar una tarea
+//   deleteTask: (id) => {
+//     const token = localStorage.getItem('access_token');
+//     return api.delete(`tasks/${id}/`, {
+//       headers: {
+//         Authorization: `Bearer ${token}`, // Agregar el token en la cabecera
+//       }
+//     });
+//   }
+// };
 
 export default api;
