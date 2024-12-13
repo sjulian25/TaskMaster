@@ -16,17 +16,12 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action == 'create':  # Permitir registro
-            print("AllowAny aplicado a la acción 'create'")
             return [AllowAny()]
         return [IsAuthenticated()]
     
     @action(detail=False, methods=['post'], permission_classes=[AllowAny])
     def register(self, request):
-        customData = request.data 
-        customData["password"] = "jaja"
-        logger.info(f"{self.request.data}")
-        print(customData)
-        serializer = self.get_serializer(data=customData)
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        serializer.create(request.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
