@@ -21,28 +21,6 @@ const refreshToken = async () => {
   }
 };
 
-// Interceptor para añadir token de autenticación
-// api.interceptors.request.use(async config => {
-//   const token = localStorage.getItem('access_token');
-//   const refresh = localStorage.getItem('refresh_token');
-
-//   if (token && refresh) {
-//     try {
-//       // Verificar expiración del token
-//       const exp = JSON.parse(atob(token.split('.')[1])).exp;
-//       if (Date.now() >= exp * 1000) {
-//         await refreshToken();
-//         config.headers['Authorization'] = `Bearer ${localStorage.getItem('access_token')}`;
-//       } else {
-//         config.headers['Authorization'] = `Bearer ${token}`;
-//       }
-//     } catch (error) {
-//       console.error("Error procesando el token: ", error);
-//     }
-//   }
-//   return config;
-// });
-
 api.interceptors.request.use(async config => {
   const token = localStorage.getItem('access_token');
   const refresh = localStorage.getItem('refresh_token');
@@ -86,7 +64,7 @@ export const authService = {
     return axios.post(`${API_URL}token/`, { username, password });
   },
   register: (userData) => {
-    return axios.post(`${API_URL}users/register/`, userData);
+    return axios.post(`${API_URL}users/`, userData);
   },
   getCurrentUser: () => {
     return api.get('users/profile/');
@@ -100,46 +78,5 @@ export const taskService = {
   updateTask: (id, taskData) => api.put(`tasks/${id}/`, taskData),
   deleteTask: (id) => api.delete(`tasks/${id}/`),
 };
-// export const taskService = {
-//   // Obtener todas las tareas
-//   getTasks: () => {
-//     const token = localStorage.getItem('access_token');
-//     return api.get('tasks/', {
-//       headers: {
-//         Authorization: `Bearer ${token}`, // Agregar el token en la cabecera
-//       }
-//     });
-//   },
-
-//   // Crear una nueva tarea
-//   createTask: (taskData) => {
-//     const token = localStorage.getItem('access_token');
-//     return api.post('tasks/', taskData, {
-//       headers: {
-//         Authorization: `Bearer ${token}`, // Agregar el token en la cabecera
-//       }
-//     });
-//   },
-
-//   // Actualizar una tarea existente
-//   updateTask: (id, taskData) => {
-//     const token = localStorage.getItem('access_token');
-//     return api.put(`tasks/${id}/`, taskData, {
-//       headers: {
-//         Authorization: `Bearer ${token}`, // Agregar el token en la cabecera
-//       }
-//     });
-//   },
-
-//   // Eliminar una tarea
-//   deleteTask: (id) => {
-//     const token = localStorage.getItem('access_token');
-//     return api.delete(`tasks/${id}/`, {
-//       headers: {
-//         Authorization: `Bearer ${token}`, // Agregar el token en la cabecera
-//       }
-//     });
-//   }
-// };
 
 export default api;

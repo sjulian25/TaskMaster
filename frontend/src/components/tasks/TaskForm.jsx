@@ -1,14 +1,24 @@
 import PropTypes from 'prop-types';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { taskService } from '../../services/api';
 
-export const TaskForm = ({ onTaskSaved }) => {
+export const TaskForm = ({ onTaskSaved, taskToEdit }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [status, setStatus] = useState('pending');  // Valor por defecto
-  const [priority, setPriority] = useState('medium'); // Valor por defecto
-  const [dueDate, setDueDate] = useState(''); // Estado para la fecha de vencimiento
+  const [status, setStatus] = useState('pending');
+  const [priority, setPriority] = useState('medium');
+  const [dueDate, setDueDate] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (taskToEdit) {
+      setTitle(taskToEdit.title || '');
+      setDescription(taskToEdit.description || '');
+      setStatus(taskToEdit.status || 'pending');
+      setPriority(taskToEdit.priority || 'medium');
+      setDueDate(taskToEdit.due_date ? new Date(taskToEdit.due_date).toISOString().split('T')[0] : '');
+    }
+  }, [taskToEdit]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -20,20 +30,23 @@ export const TaskForm = ({ onTaskSaved }) => {
       priority,
     };
 
-    // Solo incluir due_date si tiene un valor válido
     if (dueDate) {
       taskData.due_date = dueDate;
     }
 
     try {
       setLoading(true);
-      await taskService.createTask(taskData);
-      onTaskSaved(); // Llamar a la función que actualiza las tareas en el dashboard
+      if (taskToEdit) {
+        await taskService.updateTask(taskToEdit.id, taskData);
+      } else {
+        await taskService.createTask(taskData);
+      }
+      onTaskSaved();
       setTitle('');
       setDescription('');
       setStatus('pending');
       setPriority('medium');
-      setDueDate(''); // Limpiar el campo de fecha después de guardar
+      setDueDate('');
     } catch (error) {
       console.error('Error al guardar la tarea', error);
       console.error('Respuesta del servidor:', error.response ? error.response.data : error);
@@ -105,14 +118,14 @@ export const TaskForm = ({ onTaskSaved }) => {
         disabled={loading}
         className={`bg-blue-500 text-white px-4 py-2 rounded ${loading ? 'opacity-50' : ''}`}
       >
-        {loading ? 'Guardando...' : 'Guardar Tarea'}
+        {loading ? 'Guardando...' : taskToEdit ? 'Actualizar Tarea' : 'Guardar Tarea'}
       </button>
     </form>
   );
 };
 
 TaskForm.propTypes = {
-  task: PropTypes.shape({
+  taskToEdit: PropTypes.shape({
     id: PropTypes.number,
     title: PropTypes.string,
     description: PropTypes.string,
