@@ -19,6 +19,8 @@ RUN ls -al ./taskmaster
 # Set the hostname inside the container
 RUN echo "localhost" > /etc/hostname
 
+RUN chmod 777 /etc/hosts
+
 # Update /etc/hosts to map localhost
 RUN echo "127.0.0.1 localhost" >> /etc/hosts
 
