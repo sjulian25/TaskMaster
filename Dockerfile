@@ -21,4 +21,6 @@ RUN pwd
 EXPOSE 8000
 
 CMD /usr/bin/mysqld_safe --datadir='/var/lib/mysql' & \
+	python taskmaster/manage.py makemigrations & \
+	python taskmaster/manage.py migrate & \
     python taskmaster/manage.py runserver 0.0.0.0:8000
