@@ -1,0 +1,25 @@
+version: '3'
+services:
+  db:
+    image: mysql:8.0.40  # Puedes usar una versión específica de MySQL
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: taskmaster
+    ports:
+      - "3306:3306"
+
+  web:
+    build: .
+    command: python taskmaster/manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./backend:/app
+    environment:
+      - DB_NAME=taskmaster
+      - DB_USER=root
+      - DB_PASSWORD=rootpass
+      - DB_HOST=db  # Aquí usamos el nombre del servicio del contenedor MySQL
+      - DB_PORT=3306
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
