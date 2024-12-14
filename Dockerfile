@@ -4,9 +4,9 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-RUN apk update \
-    && apk add --no-cache gcc musl-dev python3-dev libffi-dev py3-mysqlclient pkgconfig mysql-dev mysql-client \
-    && pip install --upgrade pip
+RUN  apk update \
+	&& apk add --no-cache gcc musl-dev python3-dev libffi-dev py3-mysqlclient pkgconfig mysql-dev mysql mysql-client\
+	&& pip install --upgrade pip
 
 COPY ./backend/requirements.txt ./
 
@@ -14,4 +14,11 @@ RUN pip install -r requirements.txt
 
 COPY ./backend ./
 
-CMD ["sh", "entrypoint.sh"]
+RUN ls -al ./taskmaster
+
+RUN pwd
+
+EXPOSE 8000
+
+CMD /usr/bin/mysqld_safe --datadir='/var/lib/mysql' & \
+    python taskmaster/manage.py runserver 0.0.0.0:8000
