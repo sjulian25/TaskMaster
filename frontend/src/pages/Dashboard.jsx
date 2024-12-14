@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { taskService } from '../services/api';
+import { useNavigate } from 'react-router-dom';
 import { TaskForm } from '../components/tasks/TaskForm';
 
 function Dashboard() {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [taskToEdit, setTaskToEdit] = useState(null);  // Estado para la tarea que se va a editar
+  const [taskToEdit, setTaskToEdit] = useState(null);
+  const navigate = useNavigate();  // Estado para la tarea que se va a editar
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -26,7 +28,7 @@ function Dashboard() {
   const handleLogout = () => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
-    window.location.href = '/login';
+    navigate('/login');
   };
 
   const handleTaskSaved = () => {
