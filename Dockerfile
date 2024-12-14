@@ -19,4 +19,4 @@ RUN pwd
 
 EXPOSE 8000
 
-CMD ["python3", "taskmaster/manage.py", "runserver"]
+CMD ["python3", "taskmaster/manage.py", "runserver"]
