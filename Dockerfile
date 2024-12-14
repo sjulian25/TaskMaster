@@ -16,6 +16,12 @@ COPY ./backend ./
 
 RUN ls -al ./taskmaster
 
+# Set the hostname inside the container
+RUN echo "localhost" > /etc/hostname
+
+# Update /etc/hosts to map localhost
+RUN echo "127.0.0.1 localhost" >> /etc/hosts
+
 # Set up the MySQL database, user, and password
 RUN /usr/bin/mysql_install_db --user=mysql --datadir=/var/lib/mysql && \
     mysqld_safe --datadir='/var/lib/mysql' & \
