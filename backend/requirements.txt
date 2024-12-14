@@ -9,3 +9,6 @@ django-rest-swagger==2.2.0 # Documentación API
 
 # Database
 mysqlclient==2.2.6
+
+# Deploy
+gunicorn==23.0.0
